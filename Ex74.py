@@ -16,9 +16,9 @@ negro = (0, 0, 0)
 vermell = (255, 0, 0)
 
 # Carregar imatges
-paleta_img = pygame.image.load('/home/cicles/AO/Tasca11/paleta.png')
-pilota_img = pygame.image.load('/home/cicles/AO/Tasca11/pilota.png')
-bloc_img = pygame.image.load('/home/cicles/AO/Tasca11/bloc.png')
+raqueta_img = pygame.image.load('/home/iker/AO/Python/raqueta.png')
+pelota_img = pygame.image.load('/home/iker/AO/Python/pelota.png')
+ladrillos_img = pygame.image.load('/home/iker/AO/Python/ladrillos.png')
 
 # Mida de la paleta
 paleta_amplada = 100
