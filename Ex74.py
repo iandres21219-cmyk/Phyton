@@ -1,131 +1,118 @@
 import pygame
 import random
+import sys
 
-# Inicialitzar pygame
+# Inicialización de pygame
 pygame.init()
 
-# Definir les mides de la pantalla
-ample = 800
-alt = 600
-pantalla = pygame.display.set_mode((ample, alt))
+# Dimensiones de la ventana
+WIDTH, HEIGHT = 600, 400
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Arkanoid")
 
-# Colors
-blanc = (255, 255, 255)
-negro = (0, 0, 0)
-vermell = (255, 0, 0)
+# Colores
+WHITE = (255, 255, 255)
 
-# Carregar imatges
-raqueta_img = pygame.image.load('/home/iker/AO/Python/raqueta.png')
-pelota_img = pygame.image.load('/home/iker/AO/Python/pelota.png')
-ladrillos_img = pygame.image.load('/home/iker/AO/Python/ladrillos.png')
+# Cargar imágenes
+try:
+    paddle = pygame.image.load("raqueta.png")  # Paleta
+    ball = pygame.image.load("pelota.png")    # Pelota
+    brick = pygame.image.load("ladrillos.png") # Cuadrados
+    print("Imágenes cargadas correctamente.")
+except pygame.error as e:
+    print("Error al cargar las imágenes:", e)
+    sys.exit()
 
-# Mida de la paleta
-paleta_amplada = 100
-paleta_alçada = 20
-paleta_x = ample // 2 - paleta_amplada // 2
-paleta_y = alt - paleta_alçada - 10
+# Redimensionar las imágenes
+paddle = pygame.transform.scale(paddle, (100, 20))  # Ajustar el tamaño de la paleta
+ball = pygame.transform.scale(ball, (20, 20))      # Ajustar el tamaño de la pelota
+brick = pygame.transform.scale(brick, (60, 20))    # Ajustar el tamaño de los ladrillos
 
-# Posició de la pilota
-pilota_x = ample // 2
-pilota_y = alt // 2
-pilota_velocitat_x = 3
-pilota_velocitat_y = -3
-pilota_diameter = 20
+# Dimensiones de las imágenes
+paddle_width, paddle_height = paddle.get_width(), paddle.get_height()
+ball_radius = ball.get_width() // 2
+brick_width, brick_height = brick.get_width(), brick.get_height()
 
-# Crear blocs
-bloc_amplada = 60
-bloc_alçada = 30
-blocs = []
+# Posiciones iniciales
+paddle_x = (WIDTH - paddle_width) // 2
+paddle_y = HEIGHT - 40
+ball_x = WIDTH // 2
+ball_y = HEIGHT - 50  # Asegúrate de que la pelota no esté en el borde inferior
+ball_dx = 3 * random.choice((1, -1))  # Reducir la velocidad de la pelota
+ball_dy = -3  # Reducir la velocidad de la pelota
 
-def crear_blocs():
-    for i in range(5):  # 5 files de blocs
-        for j in range(10):  # 10 blocs per cada fila
-            bloc = pygame.Rect(j * (bloc_amplada + 5) + 50, i * (bloc_alçada + 5) + 50, bloc_amplada, bloc_alçada)
-            blocs.append(bloc)
+# Ladrillos
+bricks = []
+for row in range(5):
+    for col in range(10):
+        brick_rect = pygame.Rect(col * (brick_width + 5) + 50, row * (brick_height + 5) + 50, brick_width, brick_height)
+        bricks.append(brick_rect)
 
-# Funció per dibuixar la paleta
-def dibuixar_paleta():
-    pantalla.blit(paleta_img, (paleta_x, paleta_y))
+# Función para dibujar la paleta, la pelota y los ladrillos
+def draw_window():
+    WIN.fill(WHITE)  # Limpiar la pantalla
+    WIN.blit(paddle, (paddle_x, paddle_y))  # Dibujar la paleta
+    WIN.blit(ball, (ball_x - ball_radius, ball_y - ball_radius))  # Dibujar la pelota
+   
+    for brick_rect in bricks:
+        WIN.blit(brick, brick_rect)  # Dibujar cada ladrillo en su posición
 
-# Funció per dibuixar la pilota
-def dibuixar_pilota():
-    pantalla.blit(pilota_img, (pilota_x - pilota_diameter // 2, pilota_y - pilota_diameter // 2))
+    pygame.display.update()  # Actualizar la pantalla
 
-# Funció per dibuixar els blocs
-def dibuixar_blocs():
-    for bloc in blocs:
-        pantalla.blit(bloc_img, bloc)
+# Función principal del juego
+def main():
+    global paddle_x, ball_x, ball_y, ball_dx, ball_dy, bricks
+    clock = pygame.time.Clock()
+    run = True
 
-# Funció per controlar els esdeveniments
-def controlar_esdeveniments():
-    global paleta_x, pilota_velocitat_x, pilota_velocitat_y, pilota_x, pilota_y
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return False
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and paleta_x > 0:
-        paleta_x -= 10
-    if keys[pygame.K_RIGHT] and paleta_x < ample - paleta_amplada:
-        paleta_x += 10
-    return True
+    while run:
+        clock.tick(60)  # FPS (cuadros por segundo)
 
-# Funció per actualitzar la posició de la pilota
-def moure_pilota():
-    global pilota_x, pilota_y, pilota_velocitat_x, pilota_velocitat_y, blocs
-    pilota_x += pilota_velocitat_x
-    pilota_y += pilota_velocitat_y
+        # Comprobar eventos
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
 
-    # Col·lisions amb les parets
-    if pilota_x <= 0 or pilota_x >= ample:
-        pilota_velocitat_x *= -1
-    if pilota_y <= 0:
-        pilota_velocitat_y *= -1
+        # Mover la paleta con las flechas
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and paddle_x > 0:
+            paddle_x -= 5
+        if keys[pygame.K_RIGHT] and paddle_x < WIDTH - paddle_width:
+            paddle_x += 5
 
-    # Col·lisions amb la paleta
-    if pilota_y + pilota_diameter >= paleta_y and paleta_x <= pilota_x <= paleta_x + paleta_amplada:
-        pilota_velocitat_y *= -1
+        # Mover la pelota
+        ball_x += ball_dx
+        ball_y += ball_dy
 
-    # Col·lisions amb els blocs
-    for bloc in blocs[:]:
-        if bloc.collidepoint(pilota_x, pilota_y):
-            pilota_velocitat_y *= -1
-            blocs.remove(bloc)
-    
-# Funció per inicialitzar el joc
-def joc():
-    global paleta_x, paleta_y, pilota_x, pilota_y, pilota_velocitat_x, pilota_velocitat_y, blocs
+        # Rebote de la pelota con las paredes
+        if ball_x <= 0 or ball_x >= WIDTH:
+            ball_dx = -ball_dx
+        if ball_y <= 0:
+            ball_dy = -ball_dy
+        if ball_y >= HEIGHT:
+            print("La pelota tocó el fondo. Fin del juego.")
+            run = False  # El juego termina si la pelota toca el fondo
 
-    crear_blocs()
-    joc_actiu = True
-    while joc_actiu:
-        pantalla.fill(negro)
-        joc_actiu = controlar_esdeveniments()
+        # Rebote de la pelota con la paleta
+        if paddle_y < ball_y + ball_radius < paddle_y + paddle_height and paddle_x < ball_x < paddle_x + paddle_width:
+            ball_dy = -ball_dy
 
-        # Actualitzar posició de la pilota
-        moure_pilota()
+        # Colisión con los ladrillos
+        for brick_rect in bricks[:]:
+            if brick_rect.collidepoint(ball_x, ball_y):
+                ball_dy = -ball_dy
+                bricks.remove(brick_rect)
 
-        # Dibuixar elements
-        dibuixar_paleta()
-        dibuixar_pilota()
-        dibuixar_blocs()
-
-        # Actualitzar la pantalla
-        pygame.display.update()
-
-        # Condició per acabar el joc
-        if pilota_y > alt:
-            print("Has perdut!")
-            joc_actiu = False
-
-        # Limitant la velocitat de la pantalla
-        pygame.time.delay(10)
+        # Redibujar la ventana
+        draw_window()
 
     pygame.quit()
+    sys.exit()  # Esto asegura que el programa se cierre correctamente
 
-# Iniciar el joc amb la barra espaiadora
-while True:
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_SPACE]:
-        joc()
-        break
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        print("Error:", e)
+        pygame.quit()
+        sys.exit()
