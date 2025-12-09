@@ -1,16 +1,18 @@
+import string
+
 def crear_llista_fitxer(nom_fitxer):
-    # Obrim el fitxer en mode de lectura
-    with open(nom_fitxer, 'r') as fitxer:
-        # Llegim tot el contingut del fitxer i separem en paraules
-        contingut = fitxer.read()
-        llista_paraules = contingut.split()  # Separa per espais, salts de línia, etc.
-    return llista_paraules
-
-# Prova de la funció
-nom_fitxer = "exemple.txt"  # El nom del fitxer que volem llegir
-
-# Creem una llista de paraules a partir del fitxer
-llista = crear_llista_fitxer(nom_fitxer)
-
-# Mostrem el resultat
-print("Llista de paraules:", llista)
+    # Obrim el fitxer en mode lectura
+    try:
+        with open(nom_fitxer, 'r') as fitxer:
+            # Llegim el contingut del fitxer
+            contingut = fitxer.read()
+        
+        # Eliminar la puntuació de cada paraula i separar el contingut en paraules
+        taula_puntuacio = str.maketrans('', '', string.punctuation)
+        llista_paraules = [paraula.translate(taula_puntuacio).lower() for paraula in contingut.split()]
+        
+        return llista_paraules
+    
+    except FileNotFoundError:
+        print(f"El fitxer '{nom_fitxer}' no existeix.")
+        return []
